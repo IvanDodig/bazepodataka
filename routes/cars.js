@@ -2,11 +2,18 @@ const express = require("express");
 const router = express.Router();
 const Car = require("../models/Cars");
 
-router.get("/", (req, res) => {
-   res.send("We are on cars");
+// Get all cars
+router.get("/", async (req, res) => {
+   try {
+      const cars = await Car.find();
+      res.json(cars);
+   } catch (error) {
+      res.json({ message: error });
+   }
 });
 
-router.post("/", (req, res) => {
+// Create a car
+router.post("/", async (req, res) => {
    const car = new Car({
       brand: req.body.brand,
       model: req.body.model,
@@ -19,14 +26,47 @@ router.post("/", (req, res) => {
       user_id: req.body.user_id,
    });
 
-   console.log(car);
-
-   car.save()
-      .then((data) => res.json(data))
-      .catch((err) => {
-         console.log(err);
-         return res.json({ message: err });
-      });
+   try {
+      const savedCar = await car.save();
+      res.json(savedCar);
+   } catch (error) {
+      res.json({ message: error });
+   }
 });
 
+// Get single car
+router.get("/:id", async (req, res) => {
+   console.log(req.params.id);
+   try {
+      const car = await Car.findById(req.params.id);
+      res.json(car);
+   } catch (error) {
+      res.json({ message: error });
+   }
+});
+
+// Update the car
+router.patch("/:id", async (req, res) => {
+   try {
+      const updatedCar = await Car.updateOne(
+         { _id: req.params.id },
+         { $set: { brand: req.body.brand } }
+      );
+      res.json(updatedCar);
+   } catch (error) {
+      console.log(error);
+      res.json({ message: error });
+   }
+});
+
+// Delete the car
+router.delete("/:id", async (req, res) => {
+   try {
+      const removedCar = await Car.remove({ _id: req.params.id });
+      res.json(removedCar);
+   } catch (error) {
+      console.log(error);
+      res.json({ message: error });
+   }
+});
 module.exports = router;
